@@ -1,25 +1,61 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react"
+import TodoList from "./components/TodoList/TodoList"
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default function App () {
+  const [todos, setTodos] = useState([])
+  const [state, setState] = useState(null)
+
+  const fetchState = async () => {
+    try {
+      const response = await fetch('api/test')
+      const data = await response.json()
+      setState(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    fetchState()
+  }, [])
+
+  const addTodo = (evt) => {
+    const newTodo = { text: evt.target.value, id: Date.now(), completed: false}
+    setTodos([newTodo, ...todos])
+    evt.target.value = ""
+  }
+
+  const completeTodo = (id, e) => {
+    const todosCopy = [...todos]
+    const indexOfTodo = todosCopy.findIndex((i) => i.id === id )
+    todosCopy[indexOfTodo].completed = !todosCopy[indexOfTodo].completed
+    setTodos(todosCopy)
 }
 
-export default App;
+const editTodoText = (id, e) => {
+  const todosCopy = [...todos]
+  const indexOfTodo = todosCopy.findIndex((i) => i.id === id)
+  todosCopy[indexOfTodo].text = e.target.value
+  setTodos([...todosCopy])
+  e.target.value = ""
+}
+
+const deleteTodo = (id) => {
+  const todosCopy = [...todos]
+  const indexOfTodo = todosCopy.findIndex((i) => i.id === id)
+  todosCopy.splice(indexOfTodo, 1)
+  setTodos([...todosCopy])
+};
+
+return (
+  <main className="App">
+    <TodoList
+      addTodo={addTodo}
+      completeTodo={completeTodo}
+      editTodoText={editTodoText}
+      deleteTodo={deleteTodo}
+      todos={todos}
+    />
+  </main>
+)
+}
